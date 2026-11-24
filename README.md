@@ -27,3 +27,6 @@ Az n8n webhook-címek a fájlokban vannak: `dashboard.html` → `CONFIG.API_URL`
 
 ## Master szervezet (v1.1, 2026-11-24)
 A `Master` belépéssel (szervezet: `Master`) minden szervezet eredménye látszik, külön „Szervezet" oszloppal a táblában, az XLSX-ben és a PDF-ben, az ismeretlen szervezetűek „Ismeretlen" címkével. A master sor az `eredmeny_szervezetek` táblában van (`orgId: master`), a rögzítés nem illeszt rá szervezetet.
+
+## Soronkénti törlés (v1.2, 2026-11-24)
+Minden sor végén „Törlés" gomb (megerősítéssel). Végpont: `POST /webhook/eredmeny-torles` `{action:"delete", token, rid}`. A szervezet csak a saját sorait törölheti, a Master bármelyiket; a törlés végleges (az n8n `eredmeny_eredmenyek` táblából).

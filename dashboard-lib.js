@@ -1,4 +1,4 @@
-/* dashboard-lib v1.1 – 2026-11-24
+/* dashboard-lib v1.2 – 2026-11-24
  * Az eredmény-dashboard DOM-tól független logikája: statisztika, szűrés, rendezés,
  * dátum- és százalékformázás, valamint az XLSX/PDF export adatainak előállítása.
  * Böngészőben a window.DashLib alatt, Node-ban module.exports-ként érhető el (tesztelhető).
@@ -35,6 +35,7 @@
       var sz = r.szazalek === null || r.szazalek === undefined || r.szazalek === "" ? null : Number(r.szazalek);
       if (sz !== null && isNaN(sz)) sz = null;
       return {
+        rid: String(r.rid || ""),
         nev: String(r.nev || ""),
         szervezet: String(r.szervezet || ""),
         szazalek: sz,

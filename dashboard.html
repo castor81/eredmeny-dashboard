@@ -98,6 +98,10 @@ td.when { color: var(--ink-dim); white-space: nowrap; font-variant-numeric: tabu
 .pct { display: flex; align-items: center; gap: 10px; justify-content: flex-end; font-variant-numeric: tabular-nums; font-weight: 600; min-width: 130px; }
 .bar { width: 70px; height: 6px; border-radius: 6px; background: rgba(255,255,255,.12); overflow: hidden; flex: none; }
 .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--brass), var(--brass-2)); border-radius: 6px; }
+button.del { padding: 5px 11px; font-size: .78rem; color: #f0a8a0; border-color: rgba(240,120,110,.35); background: rgba(240,120,110,.08); }
+button.del:hover:not(:disabled) { background: rgba(240,120,110,.2); border-color: rgba(240,120,110,.6); }
+td.act { text-align: right; white-space: nowrap; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .chip { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: .76rem; font-weight: 600; white-space: nowrap; }
 .chip.done { color: var(--ok); background: rgba(143,214,148,.12); border: 1px solid rgba(143,214,148,.3); }
 .chip.open { color: var(--brass-2); background: rgba(209,169,59,.12); border: 1px solid rgba(209,169,59,.3); }
@@ -172,6 +176,7 @@ td.when { color: var(--ink-dim); white-space: nowrap; font-variant-numeric: tabu
           <th scope="col" style="cursor:default">Állapot</th>
           <th scope="col" data-key="elkezdve">Kezdés</th>
           <th scope="col" data-key="idopont">Befejezés</th>
+          <th scope="col" style="cursor:default"><span class="sr">Művelet</span></th>
         </tr></thead>
         <tbody id="rows"></tbody>
       </table>
@@ -190,8 +195,9 @@ td.when { color: var(--ink-dim); white-space: nowrap; font-variant-numeric: tabu
   "use strict";
   var CONFIG = {
     API_URL: "https://castor81.app.n8n.cloud/webhook/eredmeny-api",
+    DELETE_URL: "https://castor81.app.n8n.cloud/webhook/eredmeny-torles",
     LOGIN_URL: "index.html",
-    VERSION: "1.1",
+    VERSION: "1.2",
     VERSION_DATE: "2026-11-24",
     REFRESH_MS: 60000
   };
@@ -253,7 +259,7 @@ td.when { color: var(--ink-dim); white-space: nowrap; font-variant-numeric: tabu
     var tb = $("rows");
     tb.innerHTML = state.shown.map(function (r, i) {
       var pct = r.kesz ? '<div class="pct"><span class="bar" aria-hidden="true"><i style="width:' + Math.max(0, Math.min(100, r.szazalek)) + '%"></i></span>' + esc(L.fmtPct(r.szazalek)) + "</div>" : '<div class="pct">–</div>';
-      return "<tr><td class=\"idx num\">" + (i + 1) + "</td><td>" + esc(r.nev) + "</td>" + (state.master ? "<td>" + esc(r.szervezet || "Ismeretlen") + "</td>" : "") + "<td class=\"num\">" + pct + "</td><td><span class=\"chip " + (r.kesz ? "done" : "open") + "\">" + L.stateLabel(r) + "</span></td><td class=\"when\">" + esc(L.fmtDate(r.elkezdve)) + "</td><td class=\"when\">" + esc(L.fmtDate(r.befejezve)) + "</td></tr>";
+      return "<tr><td class=\"idx num\">" + (i + 1) + "</td><td>" + esc(r.nev) + "</td>" + (state.master ? "<td>" + esc(r.szervezet || "Ismeretlen") + "</td>" : "") + "<td class=\"num\">" + pct + "</td><td><span class=\"chip " + (r.kesz ? "done" : "open") + "\">" + L.stateLabel(r) + "</span></td><td class=\"when\">" + esc(L.fmtDate(r.elkezdve)) + "</td><td class=\"when\">" + esc(L.fmtDate(r.befejezve)) + "</td><td class=\"act\"><button type=\"button\" class=\"del\" data-rid=\"" + esc(r.rid) + "\" aria-label=\"Sor törlése: " + esc(r.nev) + "\">Törlés</button></td></tr>";
     }).join("");
     $("empty").hidden = state.shown.length > 0;
     $("empty").textContent = state.rows.length ? "Nincs a szűrésnek megfelelő sor." : "Még nincs megjeleníthető sor.";
@@ -292,6 +298,27 @@ td.when { color: var(--ink-dim); white-space: nowrap; font-variant-numeric: tabu
   var t = null;
   $("q").addEventListener("input", function () { clearTimeout(t); t = setTimeout(function () { state.filter.q = $("q").value.trim(); render(); }, 150); });
   $("status").addEventListener("change", function () { state.filter.status = $("status").value; render(); });
+  $("rows").addEventListener("click", async function (ev) {
+    var btn = ev.target.closest ? ev.target.closest("button.del") : null;
+    if (!btn) return;
+    var rid = btn.getAttribute("data-rid"), row = state.rows.filter(function (r) { return r.rid === rid; })[0];
+    if (!rid || !row) return;
+    if (!window.confirm("Biztosan törlöd ezt a sort?\n\n" + row.nev + (row.kesz ? " – " + L.fmtPct(row.szazalek) : " – folyamatban") + "\n\nA törlés nem vonható vissza.")) return;
+    btn.disabled = true;
+    try {
+      var res = await fetch(CONFIG.DELETE_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "delete", token: session.token, rid: rid }) });
+      if (res.status === 401) { toLogin(); return; }
+      var data = await res.json();
+      if (!data || !data.ok) throw new Error(data && data.error === "notfound" ? "A sor már nem létezik. A lista frissül." : "A törlés nem sikerült.");
+      state.rows = state.rows.filter(function (r) { return r.rid !== rid; });
+      setMsg("A sor törölve: " + row.nev);
+      render();
+    } catch (e) {
+      setMsg(e && e.message ? e.message : "A törlés nem sikerült.", true);
+      btn.disabled = false;
+      if (e && /már nem létezik/.test(e.message)) load();
+    }
+  });
   $("refresh").addEventListener("click", load);
   $("logout").addEventListener("click", toLogin);
 
