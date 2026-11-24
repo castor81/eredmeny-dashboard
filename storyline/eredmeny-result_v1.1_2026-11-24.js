@@ -1,13 +1,13 @@
-// eredmeny-result v1.0 – 2026-11-24
+// eredmeny-result v1.1 – 2026-11-24
 // Teszteredmény dia: Execute JavaScript trigger, "When timeline starts on this slide".
 // A százalékos eredményt (és a névszöveget) elküldi az n8n-nek.
 (function () {
   var player = GetPlayer();
   var WEBHOOK = "https://castor81.app.n8n.cloud/webhook/eredmeny-rogzites";
 
-  // Az eredmény dia változójának neve: "<eredmény dia neve>.ScorePercent".
+  // Az eredmény dia változójának neve: "Quiz1.ScorePercent" (a kvíz változója), vagy a "szazalek" tartalék.
   // Ha a dia neve más, írd át az első elemet; a második egy saját számváltozó (tartalék).
-  var PCT_VARS = ["Results.ScorePercent", "szazalek"];
+  var PCT_VARS = ["Quiz1.ScorePercent", "szazalek"];
 
   function readPct() {
     for (var i = 0; i < PCT_VARS.length; i++) {

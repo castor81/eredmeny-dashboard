@@ -12,5 +12,5 @@ Projektváltozók (Triggers panel → Manage Project Variables), mind szöveg t�
 Trigger: **Execute JavaScript** → `eredmeny-start_v1.0_2026-11-24.js`, a „Jump to slide" trigger mellett, when user clicks.
 
 ## Teszteredmény dia
-Trigger: **Execute JavaScript** → `eredmeny-result_v1.0_2026-11-24.js`, When timeline starts on this slide.
-Az eredmény dia változója `<dia neve>.ScorePercent` (alapból `Results.ScorePercent`); ha a dia neve más, a kód `PCT_VARS` tömbjének első elemét át kell írni.
+Trigger: **Execute JavaScript** → `eredmeny-result_v1.1_2026-11-24.js`, When timeline starts on this slide.
+Az eredmény dia változója `<dia neve>.ScorePercent` (alapból `Quiz1.ScorePercent`); ha a dia neve más, a kód `PCT_VARS` tömbjének első elemét át kell írni.
