@@ -24,3 +24,6 @@ Szervezeti (HR) eredmény-dashboard a Storyline 360 tesztekhez. Verzió: **v1.0 
 Az n8n webhook-címek a fájlokban vannak: `dashboard.html` → `CONFIG.API_URL`, `index.html` → `De.API_URL`. Jelszavak nincsenek a tárolóban: az n8n Data Table-ben SHA-256 lenyomatként tárolódnak (`sha256(orgId:jelszó)`).
 
 Új szervezet felvétele: sor az `eredmeny_szervezetek` táblába (`orgId`, `name`, `keywords` JSON-tömb, `pwhash`, `active`).
+
+## Master szervezet (v1.1, 2026-11-24)
+A `Master` belépéssel (szervezet: `Master`) minden szervezet eredménye látszik, külön „Szervezet" oszloppal a táblában, az XLSX-ben és a PDF-ben, az ismeretlen szervezetűek „Ismeretlen" címkével. A master sor az `eredmeny_szervezetek` táblában van (`orgId: master`), a rögzítés nem illeszt rá szervezetet.

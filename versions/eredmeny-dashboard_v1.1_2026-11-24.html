@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e1210">
+<meta name="robots" content="noindex, nofollow">
+<title>Eredmények – szervezeti áttekintés</title>
+<style>
+:root {
+  --bg-0: #0b0f0d; --bg-1: #151c18; --bg-2: #243029;
+  --ink: #eef1ee; --ink-dim: #a3afa8; --ink-faint: #6f7c75;
+  --brass: #d1a93b; --brass-2: #f0cf75; --moss: #5f8a6b;
+  --danger: #ff7a6b; --ok: #8fd694;
+  --glass-a: rgba(255,255,255,.095); --glass-b: rgba(255,255,255,.03);
+  --glass-line: rgba(255,255,255,.14);
+  --r: 20px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  color: var(--ink); background: var(--bg-0);
+  font-family: Inter, "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased; line-height: 1.45;
+}
+.backdrop { position: fixed; inset: 0; z-index: 0; overflow: hidden;
+  background: linear-gradient(180deg, var(--bg-2) 0%, var(--bg-1) 45%, var(--bg-0) 100%); }
+.orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .5; }
+.orb.a { width: 46vmax; height: 46vmax; right: -14vmax; top: -18vmax; background: radial-gradient(circle, rgba(209,169,59,.55), rgba(209,169,59,0) 70%); }
+.orb.b { width: 52vmax; height: 52vmax; left: -22vmax; bottom: -26vmax; background: radial-gradient(circle, rgba(95,138,107,.6), rgba(95,138,107,0) 70%); }
+.orb.c { width: 26vmax; height: 26vmax; left: 38%; top: 34%; background: radial-gradient(circle, rgba(240,207,117,.16), rgba(240,207,117,0) 70%); }
+
+.wrap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: max(20px, env(safe-area-inset-top)) 20px 48px; }
+
+.glass {
+  background: linear-gradient(135deg, var(--glass-a), var(--glass-b));
+  border: 1px solid var(--glass-line); border-radius: var(--r);
+  backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: 0 24px 60px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.12);
+}
+
+header.top { display: flex; gap: 16px; align-items: center; justify-content: space-between; padding: 18px 22px; margin-bottom: 18px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.badge { width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; flex: none;
+  color: #1b1405; background: linear-gradient(135deg, var(--brass-2), var(--brass)); }
+.brand small { display: block; color: var(--ink-dim); font-size: .8rem; }
+h1 { margin: 0; font-size: clamp(1.4rem, 3.6vw, 2.1rem); font-weight: 600; letter-spacing: -.02em; line-height: 1.1; }
+.actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.stamp { color: var(--ink-faint); font-size: .78rem; margin-right: 6px; }
+
+button, .btn {
+  font: inherit; font-size: .88rem; color: var(--ink); cursor: pointer;
+  padding: 9px 14px; border-radius: 11px; border: 1px solid var(--glass-line);
+  background: rgba(255,255,255,.06); transition: background .15s, border-color .15s, transform .15s;
+}
+button:hover:not(:disabled) { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.28); }
+button:active:not(:disabled) { transform: translateY(1px); }
+button:disabled { opacity: .5; cursor: default; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--brass-2); outline-offset: 2px; }
+button.primary { color: #1b1405; font-weight: 700; border: 0; background: linear-gradient(180deg, var(--brass-2), var(--brass)); box-shadow: 0 8px 20px rgba(209,169,59,.22); }
+button.primary:hover:not(:disabled) { filter: brightness(1.07); background: linear-gradient(180deg, var(--brass-2), var(--brass)); }
+
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px; }
+.kpi { padding: 18px 20px; }
+.kpi .v { font-size: clamp(1.7rem, 4vw, 2.4rem); font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.kpi .l { color: var(--ink-dim); font-size: .85rem; margin-top: 4px; }
+.kpi .s { color: var(--ink-faint); font-size: .76rem; margin-top: 2px; }
+
+.panel { padding: 20px 22px; margin-bottom: 18px; }
+.panel h2 { margin: 0 0 4px; font-size: 1.02rem; font-weight: 600; }
+.panel .sub { margin: 0 0 14px; color: var(--ink-dim); font-size: .84rem; }
+#hist { width: 100%; height: auto; display: block; }
+#hist text { fill: var(--ink-dim); font-size: 11px; }
+#hist .cnt { fill: var(--ink); font-weight: 600; font-size: 12px; }
+
+.toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.toolbar .grow { flex: 1 1 220px; }
+input[type="search"], select {
+  font: inherit; font-size: .9rem; color: var(--ink); padding: 10px 13px; border-radius: 11px; width: 100%;
+  background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.14); outline: none;
+}
+select { width: auto; }
+select option { color: #111; }
+input::placeholder { color: var(--ink-faint); }
+.spacer { flex: 1; }
+
+.tablewrap { overflow: auto; border-radius: 14px; border: 1px solid rgba(255,255,255,.1); max-height: 62vh; }
+table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+thead th { position: sticky; top: 0; z-index: 1; text-align: left; font-weight: 600; font-size: .78rem; letter-spacing: .02em; color: var(--ink-dim);
+  padding: 12px 14px; background: rgba(20,27,23,.92); border-bottom: 1px solid rgba(255,255,255,.14); white-space: nowrap; cursor: pointer; user-select: none; }
+thead th.num, td.num { text-align: right; }
+thead th[aria-sort="ascending"]::after { content: " ▲"; color: var(--brass-2); font-size: .7em; }
+thead th[aria-sort="descending"]::after { content: " ▼"; color: var(--brass-2); font-size: .7em; }
+tbody td { padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,.07); vertical-align: middle; }
+tbody tr:hover td { background: rgba(255,255,255,.05); }
+td.idx { color: var(--ink-faint); width: 1%; }
+td.when { color: var(--ink-dim); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pct { display: flex; align-items: center; gap: 10px; justify-content: flex-end; font-variant-numeric: tabular-nums; font-weight: 600; min-width: 130px; }
+.bar { width: 70px; height: 6px; border-radius: 6px; background: rgba(255,255,255,.12); overflow: hidden; flex: none; }
+.bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--brass), var(--brass-2)); border-radius: 6px; }
+.chip { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: .76rem; font-weight: 600; white-space: nowrap; }
+.chip.done { color: var(--ok); background: rgba(143,214,148,.12); border: 1px solid rgba(143,214,148,.3); }
+.chip.open { color: var(--brass-2); background: rgba(209,169,59,.12); border: 1px solid rgba(209,169,59,.3); }
+.empty { padding: 34px 16px; text-align: center; color: var(--ink-dim); }
+.foot { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 12px; color: var(--ink-faint); font-size: .78rem; }
+.msg { min-height: 1.3em; font-size: .88rem; margin: 0 0 12px; }
+.msg.err { color: var(--danger); }
+
+@media (max-width: 860px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) { .wrap { padding-left: 12px; padding-right: 12px; } .glass { border-radius: 16px; } .kpi { padding: 14px; } .bar { display: none; } .pct { min-width: 0; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+@media print { .backdrop, .actions, .toolbar { display: none; } body { background: #fff; color: #000; } .glass { box-shadow: none; background: none; border-color: #bbb; backdrop-filter: none; } }
+</style>
+</head>
+<body>
+<div class="backdrop" aria-hidden="true"><div class="orb a"></div><div class="orb b"></div><div class="orb c"></div></div>
+
+<div class="wrap">
+  <header class="top glass">
+    <div class="brand">
+      <div class="badge" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg>
+      </div>
+      <div>
+        <small>Teszteredmények</small>
+        <h1 id="org">Betöltés…</h1>
+      </div>
+    </div>
+    <div class="actions">
+      <span class="stamp" id="stamp"></span>
+      <button id="refresh" type="button">Frissítés</button>
+      <button id="logout" type="button">Kilépés</button>
+    </div>
+  </header>
+
+  <p id="msg" class="msg" role="status" aria-live="polite"></p>
+
+  <section class="kpis" aria-label="Összesítés">
+    <div class="kpi glass"><div class="v" id="k-total">–</div><div class="l">Résztvevő</div><div class="s" id="k-open"></div></div>
+    <div class="kpi glass"><div class="v" id="k-done">–</div><div class="l">Befejezte a tesztet</div></div>
+    <div class="kpi glass"><div class="v" id="k-avg">–</div><div class="l">Átlageredmény</div></div>
+    <div class="kpi glass"><div class="v" id="k-range">–</div><div class="l">Legjobb és legalacsonyabb</div></div>
+  </section>
+
+  <section class="panel glass" aria-labelledby="h-hist">
+    <h2 id="h-hist">Eredmények eloszlása</h2>
+    <p class="sub">A befejezett tesztek száma 10 százalékpontos sávokban.</p>
+    <svg id="hist" viewBox="0 0 760 170" role="img" aria-label="Eredmények eloszlása"></svg>
+  </section>
+
+  <section class="panel glass" aria-labelledby="h-list">
+    <h2 id="h-list">Résztvevők</h2>
+    <p class="sub">A „Név” oszlop azt mutatja, amit a hallgató a belépéskor beírt.</p>
+    <div class="toolbar">
+      <div class="grow"><input id="q" type="search" placeholder="Keresés névben vagy rendfokozatban" aria-label="Keresés"></div>
+      <select id="status" aria-label="Állapot szűrő">
+        <option value="all">Minden állapot</option>
+        <option value="done">Befejezte</option>
+        <option value="open">Folyamatban</option>
+      </select>
+      <span class="spacer"></span>
+      <button id="x-xlsx" class="primary" type="button">Exportálás XLSX</button>
+      <button id="x-pdf" class="primary" type="button">Exportálás PDF</button>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr>
+          <th scope="col" class="num" style="cursor:default">#</th>
+          <th scope="col" data-key="nev">Név, rendfokozat, szervezet</th>
+          <th scope="col" data-key="szervezet" id="th-szerv" hidden>Szervezet</th>
+          <th scope="col" data-key="szazalek" class="num">Eredmény</th>
+          <th scope="col" style="cursor:default">Állapot</th>
+          <th scope="col" data-key="elkezdve">Kezdés</th>
+          <th scope="col" data-key="idopont">Befejezés</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div id="empty" class="empty" hidden>Még nincs megjeleníthető sor.</div>
+    </div>
+    <div class="foot"><span id="count"></span><span id="ver"></span></div>
+  </section>
+</div>
+
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="vendor/pdfmake.min.js"></script>
+<script src="vendor/vfs_fonts.js"></script>
+<script src="dashboard-lib.js"></script>
+<script>
+(function () {
+  "use strict";
+  var CONFIG = {
+    API_URL: "https://castor81.app.n8n.cloud/webhook/eredmeny-api",
+    LOGIN_URL: "index.html",
+    VERSION: "1.1",
+    VERSION_DATE: "2026-11-24",
+    REFRESH_MS: 60000
+  };
+  var L = window.DashLib;
+  var $ = function (id) { return document.getElementById(id); };
+
+  var session = null;
+  try { session = JSON.parse(sessionStorage.getItem("ed_session") || "null"); } catch (e) {}
+  function toLogin() { try { sessionStorage.removeItem("ed_session"); } catch (e) {} window.location.replace(CONFIG.LOGIN_URL); }
+  if (!session || !session.token || (session.expires && session.expires < new Date().toISOString())) { toLogin(); return; }
+
+  var state = { rows: [], org: session.org || "", master: false, generated: "", sort: { key: "idopont", dir: "desc" }, filter: { q: "", status: "all" }, shown: [] };
+  $("ver").textContent = "Eredmény-dashboard v" + CONFIG.VERSION + " · " + CONFIG.VERSION_DATE;
+  $("org").textContent = state.org || "Szervezet";
+  document.title = (state.org ? state.org + " – " : "") + "Eredmények";
+
+  function setMsg(t, err) { var m = $("msg"); m.textContent = t || ""; m.className = "msg" + (err ? " err" : ""); }
+
+  async function load() {
+    $("refresh").disabled = true;
+    try {
+      var res = await fetch(CONFIG.API_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "results", token: session.token }) });
+      if (res.status === 401) { toLogin(); return; }
+      var data = await res.json();
+      if (!data || !data.ok) throw new Error("A lista betöltése nem sikerült.");
+      state.rows = L.normalize(data.records);
+      state.generated = data.generated || new Date().toISOString();
+      state.master = data.master === true;
+      $("th-szerv").hidden = !state.master;
+      if (data.org) { state.org = data.org; $("org").textContent = data.org; }
+      setMsg("");
+      render();
+    } catch (e) {
+      setMsg(e && e.message ? e.message : "A lista betöltése nem sikerült. Próbáld újra a Frissítés gombbal.", true);
+    } finally { $("refresh").disabled = false; }
+  }
+
+  function filterNote() {
+    var parts = [];
+    if (state.filter.q) parts.push("keresés: „" + state.filter.q + "”");
+    if (state.filter.status === "done") parts.push("csak a befejezők");
+    if (state.filter.status === "open") parts.push("csak a folyamatban lévők");
+    return parts.length ? parts.join(", ") + " (" + state.shown.length + "/" + state.rows.length + " sor)" : "teljes lista";
+  }
+
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+
+  function render() {
+    var st = L.stats(state.rows);
+    $("k-total").textContent = st.total;
+    $("k-open").textContent = st.open ? st.open + " még folyamatban" : "";
+    $("k-done").textContent = st.done;
+    $("k-avg").textContent = L.fmtPct(st.avg);
+    $("k-range").textContent = st.done ? L.fmtPct(st.max) + " · " + L.fmtPct(st.min) : "–";
+    $("stamp").textContent = "Frissítve: " + L.fmtDate(state.generated).slice(11);
+    drawHist();
+
+    state.shown = L.view(state.rows, state.filter, state.sort);
+    var tb = $("rows");
+    tb.innerHTML = state.shown.map(function (r, i) {
+      var pct = r.kesz ? '<div class="pct"><span class="bar" aria-hidden="true"><i style="width:' + Math.max(0, Math.min(100, r.szazalek)) + '%"></i></span>' + esc(L.fmtPct(r.szazalek)) + "</div>" : '<div class="pct">–</div>';
+      return "<tr><td class=\"idx num\">" + (i + 1) + "</td><td>" + esc(r.nev) + "</td>" + (state.master ? "<td>" + esc(r.szervezet || "Ismeretlen") + "</td>" : "") + "<td class=\"num\">" + pct + "</td><td><span class=\"chip " + (r.kesz ? "done" : "open") + "\">" + L.stateLabel(r) + "</span></td><td class=\"when\">" + esc(L.fmtDate(r.elkezdve)) + "</td><td class=\"when\">" + esc(L.fmtDate(r.befejezve)) + "</td></tr>";
+    }).join("");
+    $("empty").hidden = state.shown.length > 0;
+    $("empty").textContent = state.rows.length ? "Nincs a szűrésnek megfelelő sor." : "Még nincs megjeleníthető sor.";
+    $("count").textContent = state.shown.length + " sor a(z) " + state.rows.length + " közül";
+    $("x-xlsx").disabled = $("x-pdf").disabled = !state.rows.length;
+    document.querySelectorAll("thead th[data-key]").forEach(function (th) {
+      var key = th.getAttribute("data-key");
+      var active = key === state.sort.key;
+      th.setAttribute("aria-sort", active ? (state.sort.dir === "asc" ? "ascending" : "descending") : "none");
+    });
+  }
+
+  function drawHist() {
+    var bins = L.histogram(state.rows), max = Math.max.apply(null, bins.map(function (b) { return b.count; }).concat([1]));
+    var W = 760, H = 170, left = 8, right = 8, base = 138, top = 22, gap = 10;
+    var bw = (W - left - right - gap * 9) / 10, out = "";
+    bins.forEach(function (b, i) {
+      var h = b.count ? Math.max(4, (base - top) * b.count / max) : 2, x = left + i * (bw + gap), y = base - h;
+      out += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="6" fill="' + (b.count ? "url(#hg)" : "rgba(255,255,255,.1)") + '"/>';
+      if (b.count) out += '<text class="cnt" x="' + (x + bw / 2).toFixed(1) + '" y="' + (y - 6).toFixed(1) + '" text-anchor="middle">' + b.count + "</text>";
+      out += '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (base + 20) + '" text-anchor="middle">' + b.from + (i === 9 ? "–100" : "–" + (b.from + 9)) + "</text>";
+    });
+    $("hist").innerHTML = '<defs><linearGradient id="hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0cf75"/><stop offset="1" stop-color="#d1a93b"/></linearGradient></defs>' + out;
+    $("hist").setAttribute("aria-label", "Eredmények eloszlása: " + bins.map(function (b) { return b.from + "–" + Math.round(b.to) + "%: " + b.count; }).join("; "));
+  }
+
+  /* rendezés a fejlécre kattintva */
+  document.querySelectorAll("thead th[data-key]").forEach(function (th) {
+    th.addEventListener("click", function () {
+      var key = th.getAttribute("data-key");
+      if (state.sort.key === key) state.sort.dir = state.sort.dir === "asc" ? "desc" : "asc";
+      else state.sort = { key: key, dir: (key === "nev" || key === "szervezet") ? "asc" : "desc" };
+      render();
+    });
+  });
+  var t = null;
+  $("q").addEventListener("input", function () { clearTimeout(t); t = setTimeout(function () { state.filter.q = $("q").value.trim(); render(); }, 150); });
+  $("status").addEventListener("change", function () { state.filter.status = $("status").value; render(); });
+  $("refresh").addEventListener("click", load);
+  $("logout").addEventListener("click", toLogin);
+
+  function baseName() { return "eredmenyek_" + L.safeName(state.org) + "_" + new Date().toISOString().slice(0, 10); }
+  function meta() { return { org: state.org, master: state.master, generated: new Date().toISOString(), filterNote: filterNote() }; }
+
+  $("x-xlsx").addEventListener("click", function () {
+    try {
+      var rows = state.shown, st = L.stats(rows), sh = L.xlsxSheets(meta(), rows, st);
+      var wb = XLSX.utils.book_new();
+      var ws1 = XLSX.utils.aoa_to_sheet(sh.results), ws2 = XLSX.utils.aoa_to_sheet(sh.summary);
+      ws1["!cols"] = state.master ? [{ wch: 56 }, { wch: 22 }, { wch: 14 }, { wch: 14 }, { wch: 18 }, { wch: 18 }] : [{ wch: 56 }, { wch: 14 }, { wch: 14 }, { wch: 18 }, { wch: 18 }];
+      ws2["!cols"] = [{ wch: 26 }, { wch: 30 }];
+      XLSX.utils.book_append_sheet(wb, ws1, "Eredmények");
+      XLSX.utils.book_append_sheet(wb, ws2, "Összesítés");
+      XLSX.writeFile(wb, baseName() + ".xlsx");
+    } catch (e) { setMsg("Az XLSX export nem sikerült.", true); }
+  });
+  $("x-pdf").addEventListener("click", function () {
+    try {
+      var rows = state.shown, st = L.stats(rows);
+      pdfMake.createPdf(L.pdfDoc(meta(), rows, st, CONFIG.VERSION)).download(baseName() + ".pdf");
+    } catch (e) { setMsg("A PDF export nem sikerült.", true); }
+  });
+
+  load();
+  setInterval(function () { if (!document.hidden) load(); }, CONFIG.REFRESH_MS);
+})();
+</script>
+</body>
+</html>

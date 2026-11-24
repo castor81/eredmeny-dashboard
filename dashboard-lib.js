@@ -1,4 +1,4 @@
-/* dashboard-lib v1.0 – 2026-11-24
+/* dashboard-lib v1.1 – 2026-11-24
  * Az eredmény-dashboard DOM-tól független logikája: statisztika, szűrés, rendezés,
  * dátum- és százalékformázás, valamint az XLSX/PDF export adatainak előállítása.
  * Böngészőben a window.DashLib alatt, Node-ban module.exports-ként érhető el (tesztelhető).
@@ -36,6 +36,7 @@
       if (sz !== null && isNaN(sz)) sz = null;
       return {
         nev: String(r.nev || ""),
+        szervezet: String(r.szervezet || ""),
         szazalek: sz,
         elkezdve: String(r.elkezdve || ""),
         befejezve: String(r.befejezve || ""),
@@ -81,13 +82,14 @@
     var out = rows.filter(function (r) {
       if (st === "done" && !r.kesz) return false;
       if (st === "open" && r.kesz) return false;
-      if (q && norm(r.nev).indexOf(q) === -1) return false;
+      if (q && norm(r.nev + " " + r.szervezet).indexOf(q) === -1) return false;
       return true;
     });
     var key = (sort && sort.key) || "idopont";
     var dir = sort && sort.dir === "asc" ? 1 : -1;
     out.sort(function (a, b) {
       var x, y;
+      if (key === "szervezet") { x = norm(a.szervezet); y = norm(b.szervezet); return x < y ? -dir : x > y ? dir : 0; }
       if (key === "nev") { x = norm(a.nev); y = norm(b.nev); return x < y ? -dir : x > y ? dir : 0; }
       if (key === "szazalek") {
         x = a.szazalek === null ? -1 : a.szazalek; y = b.szazalek === null ? -1 : b.szazalek;
@@ -105,8 +107,11 @@
   /* XLSX: tömbök tömbje (aoa) két munkalaphoz */
   function xlsxSheets(meta, rows, st) {
     var head = ["Név, rendfokozat, szervezet (a hallgató megadása)", "Eredmény (%)", "Állapot", "Kezdés", "Befejezés"];
+    if (meta.master) head.splice(1, 0, "Szervezet");
     var data = [head].concat(rows.map(function (r) {
-      return [r.nev, r.szazalek === null ? "" : r.szazalek, stateLabel(r), fmtDate(r.elkezdve), fmtDate(r.befejezve)];
+      var line = [r.nev, r.szazalek === null ? "" : r.szazalek, stateLabel(r), fmtDate(r.elkezdve), fmtDate(r.befejezve)];
+      if (meta.master) line.splice(1, 0, r.szervezet || "Ismeretlen");
+      return line;
     }));
     var sum = [
       ["Eredményjelentés", meta.org],
@@ -133,17 +138,25 @@
       { text: "Kezdés", style: "th" },
       { text: "Befejezés", style: "th" }
     ]];
+    if (meta.master) body[0].splice(2, 0, { text: "Szervezet", style: "th" });
     rows.forEach(function (r, i) {
-      body.push([
+      var line = [
         { text: String(i + 1), alignment: "right", color: "#7a857f" },
         r.nev,
         { text: fmtPct(r.szazalek), alignment: "right", bold: r.kesz },
         { text: stateLabel(r), color: r.kesz ? "#2e6b3a" : "#8a6d1a" },
         fmtDate(r.elkezdve),
         fmtDate(r.befejezve)
-      ]);
+      ];
+      if (meta.master) line.splice(2, 0, r.szervezet || "Ismeretlen");
+      body.push(line);
     });
-    if (!rows.length) body.push([{ text: "Nincs megjeleníthető sor.", colSpan: 6, color: "#7a857f" }, {}, {}, {}, {}, {}]);
+    var ncol = meta.master ? 7 : 6;
+    if (!rows.length) {
+      var empty = [{ text: "Nincs megjeleníthető sor.", colSpan: ncol, color: "#7a857f" }];
+      for (var e = 1; e < ncol; e++) empty.push({});
+      body.push(empty);
+    }
     return {
       pageSize: "A4",
       pageOrientation: "landscape",
@@ -164,7 +177,7 @@
           margin: [0, 0, 0, 14]
         },
         {
-          table: { headerRows: 1, widths: [24, "*", 56, 70, 90, 90], body: body },
+          table: { headerRows: 1, widths: meta.master ? [24, "*", 90, 56, 70, 82, 82] : [24, "*", 56, 70, 90, 90], body: body },
           layout: {
             hLineWidth: function (i, node) { return i === 0 || i === 1 || i === node.table.body.length ? 0.8 : 0.3; },
             vLineWidth: function () { return 0; },

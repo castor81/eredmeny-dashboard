@@ -167,6 +167,7 @@ td.when { color: var(--ink-dim); white-space: nowrap; font-variant-numeric: tabu
         <thead><tr>
           <th scope="col" class="num" style="cursor:default">#</th>
           <th scope="col" data-key="nev">Név, rendfokozat, szervezet</th>
+          <th scope="col" data-key="szervezet" id="th-szerv" hidden>Szervezet</th>
           <th scope="col" data-key="szazalek" class="num">Eredmény</th>
           <th scope="col" style="cursor:default">Állapot</th>
           <th scope="col" data-key="elkezdve">Kezdés</th>
@@ -190,7 +191,7 @@ td.when { color: var(--ink-dim); white-space: nowrap; font-variant-numeric: tabu
   var CONFIG = {
     API_URL: "https://castor81.app.n8n.cloud/webhook/eredmeny-api",
     LOGIN_URL: "index.html",
-    VERSION: "1.0",
+    VERSION: "1.1",
     VERSION_DATE: "2026-11-24",
     REFRESH_MS: 60000
   };
@@ -202,7 +203,7 @@ td.when { color: var(--ink-dim); white-space: nowrap; font-variant-numeric: tabu
   function toLogin() { try { sessionStorage.removeItem("ed_session"); } catch (e) {} window.location.replace(CONFIG.LOGIN_URL); }
   if (!session || !session.token || (session.expires && session.expires < new Date().toISOString())) { toLogin(); return; }
 
-  var state = { rows: [], org: session.org || "", generated: "", sort: { key: "idopont", dir: "desc" }, filter: { q: "", status: "all" }, shown: [] };
+  var state = { rows: [], org: session.org || "", master: false, generated: "", sort: { key: "idopont", dir: "desc" }, filter: { q: "", status: "all" }, shown: [] };
   $("ver").textContent = "Eredmény-dashboard v" + CONFIG.VERSION + " · " + CONFIG.VERSION_DATE;
   $("org").textContent = state.org || "Szervezet";
   document.title = (state.org ? state.org + " – " : "") + "Eredmények";
@@ -218,6 +219,8 @@ td.when { color: var(--ink-dim); white-space: nowrap; font-variant-numeric: tabu
       if (!data || !data.ok) throw new Error("A lista betöltése nem sikerült.");
       state.rows = L.normalize(data.records);
       state.generated = data.generated || new Date().toISOString();
+      state.master = data.master === true;
+      $("th-szerv").hidden = !state.master;
       if (data.org) { state.org = data.org; $("org").textContent = data.org; }
       setMsg("");
       render();
@@ -250,7 +253,7 @@ td.when { color: var(--ink-dim); white-space: nowrap; font-variant-numeric: tabu
     var tb = $("rows");
     tb.innerHTML = state.shown.map(function (r, i) {
       var pct = r.kesz ? '<div class="pct"><span class="bar" aria-hidden="true"><i style="width:' + Math.max(0, Math.min(100, r.szazalek)) + '%"></i></span>' + esc(L.fmtPct(r.szazalek)) + "</div>" : '<div class="pct">–</div>';
-      return "<tr><td class=\"idx num\">" + (i + 1) + "</td><td>" + esc(r.nev) + "</td><td class=\"num\">" + pct + "</td><td><span class=\"chip " + (r.kesz ? "done" : "open") + "\">" + L.stateLabel(r) + "</span></td><td class=\"when\">" + esc(L.fmtDate(r.elkezdve)) + "</td><td class=\"when\">" + esc(L.fmtDate(r.befejezve)) + "</td></tr>";
+      return "<tr><td class=\"idx num\">" + (i + 1) + "</td><td>" + esc(r.nev) + "</td>" + (state.master ? "<td>" + esc(r.szervezet || "Ismeretlen") + "</td>" : "") + "<td class=\"num\">" + pct + "</td><td><span class=\"chip " + (r.kesz ? "done" : "open") + "\">" + L.stateLabel(r) + "</span></td><td class=\"when\">" + esc(L.fmtDate(r.elkezdve)) + "</td><td class=\"when\">" + esc(L.fmtDate(r.befejezve)) + "</td></tr>";
     }).join("");
     $("empty").hidden = state.shown.length > 0;
     $("empty").textContent = state.rows.length ? "Nincs a szűrésnek megfelelő sor." : "Még nincs megjeleníthető sor.";
@@ -282,7 +285,7 @@ td.when { color: var(--ink-dim); white-space: nowrap; font-variant-numeric: tabu
     th.addEventListener("click", function () {
       var key = th.getAttribute("data-key");
       if (state.sort.key === key) state.sort.dir = state.sort.dir === "asc" ? "desc" : "asc";
-      else state.sort = { key: key, dir: key === "nev" ? "asc" : "desc" };
+      else state.sort = { key: key, dir: (key === "nev" || key === "szervezet") ? "asc" : "desc" };
       render();
     });
   });
@@ -293,14 +296,14 @@ td.when { color: var(--ink-dim); white-space: nowrap; font-variant-numeric: tabu
   $("logout").addEventListener("click", toLogin);
 
   function baseName() { return "eredmenyek_" + L.safeName(state.org) + "_" + new Date().toISOString().slice(0, 10); }
-  function meta() { return { org: state.org, generated: new Date().toISOString(), filterNote: filterNote() }; }
+  function meta() { return { org: state.org, master: state.master, generated: new Date().toISOString(), filterNote: filterNote() }; }
 
   $("x-xlsx").addEventListener("click", function () {
     try {
       var rows = state.shown, st = L.stats(rows), sh = L.xlsxSheets(meta(), rows, st);
       var wb = XLSX.utils.book_new();
       var ws1 = XLSX.utils.aoa_to_sheet(sh.results), ws2 = XLSX.utils.aoa_to_sheet(sh.summary);
-      ws1["!cols"] = [{ wch: 56 }, { wch: 14 }, { wch: 14 }, { wch: 18 }, { wch: 18 }];
+      ws1["!cols"] = state.master ? [{ wch: 56 }, { wch: 22 }, { wch: 14 }, { wch: 14 }, { wch: 18 }, { wch: 18 }] : [{ wch: 56 }, { wch: 14 }, { wch: 14 }, { wch: 18 }, { wch: 18 }];
       ws2["!cols"] = [{ wch: 26 }, { wch: 30 }];
       XLSX.utils.book_append_sheet(wb, ws1, "Eredmények");
       XLSX.utils.book_append_sheet(wb, ws2, "Összesítés");
